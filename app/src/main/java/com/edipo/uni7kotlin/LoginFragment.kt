@@ -48,7 +48,7 @@ class LoginFragment : Fragment() {
                     dao.findByNamePassword(name, password) != null
                 }
                 if(loginTask.await()){
-//                    startActivity(WeatherInfoActivity.getIntent(application, username))
+                    startActivity(WeatherInfoActivity.getIntent(context, name))
                 } else {
                     Toast.makeText(context, R.string.error_credentials_invalid, Toast.LENGTH_LONG).show()
                 }
