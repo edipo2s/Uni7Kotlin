@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Uni7Kotlin</string>
+
+    <string name="username">Nome de Usuário</string>
+    <string name="password">Senha</string>
+    <string name="login">Logar</string>
+    <string name="register">Registrar</string>
+
 </resources>
