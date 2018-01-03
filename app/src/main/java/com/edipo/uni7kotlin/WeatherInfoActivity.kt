@@ -14,8 +14,15 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
+import com.bumptech.glide.Glide
+import com.edipo.uni7kotlin.remote.IOpenWeatherMap
+import com.edipo.uni7kotlin.remote.WeatherRsp
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_weather.*
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
 
 class WeatherInfoActivity : AppCompatActivity() {
 
@@ -83,6 +90,41 @@ class WeatherInfoActivity : AppCompatActivity() {
     }
 
     private fun requestTemperatureFromLocation(lat: Double, lon: Double) {
+        Retrofit.Builder()
+                .addConverterFactory(MoshiConverterFactory.create())
+                .baseUrl("https://api.openweathermap.org/")
+                .build()
+                .create(IOpenWeatherMap::class.java)
+                .getWeather(lat, lon, "pt", "metric", BuildConfig.WEATHER_APPID)
+                .enqueue(object : Callback<WeatherRsp> {
+
+                    override fun onResponse(call: retrofit2.Call<WeatherRsp>?, response: Response<WeatherRsp>?) {
+                        val body = response?.body()
+                        if (response?.isSuccessful == false || body == null) {
+                            showTemperatureError()
+                            return
+                        }
+                        text_weather_temp.text = getString(R.string.weather_temperature, body.main.temp)
+                        if (body.weather.isNotEmpty()) {
+                            val weather = body.weather.first()
+                            text_weather_desc.text = weather.description
+                            Glide.with(this@WeatherInfoActivity)
+                                    .load("http://openweathermap.org/img/w/${weather.icon}.png")
+                                    .into(image_weather)
+                        }
+                    }
+
+                    override fun onFailure(call: retrofit2.Call<WeatherRsp>?, t: Throwable?) {
+                        showTemperatureError()
+                        t?.printStackTrace()
+                    }
+                })
+    }
+
+    private fun showTemperatureError() {
+        Snackbar.make(findViewById<View>(android.R.id.content), R.string.error_weather, Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.try_again, { checkForUserLocation() })
+                .show()
     }
 
     private fun showLocationError() {
